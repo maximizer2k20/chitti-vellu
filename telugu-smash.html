@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>చిట్టి వేళ్ళు | Telugu Baby Keyboard Toy</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;700;900&family=Baloo+Tamma+2:wght@400;600;800&display=swap');
+
+  :root {
+    --bg: #fff8f0;
+    --accent1: #FF6B35;
+    --accent2: #FFD166;
+    --accent3: #06D6A0;
+    --accent4: #118AB2;
+    --accent5: #EF476F;
+    --accent6: #9B5DE5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Baloo Tamma 2', 'Noto Sans Telugu', sans-serif;
+    overflow: hidden;
+    height: 100dvh;
+    width: 100vw;
+    cursor: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Animated background blobs */
+  .bg-blobs {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.18;
+    animation: float linear infinite;
+  }
+  @keyframes float {
+    0%   { transform: translateY(0) scale(1); }
+    50%  { transform: translateY(-40px) scale(1.08); }
+    100% { transform: translateY(0) scale(1); }
+  }
+
+  /* Letter burst */
+  #burst-container {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .burst-letter {
+    position: absolute;
+    font-family: 'Noto Sans Telugu', sans-serif;
+    font-weight: 900;
+    pointer-events: none;
+    animation: burst-out 1.2s ease-out forwards;
+    transform-origin: center center;
+    will-change: transform, opacity;
+  }
+
+  @keyframes burst-out {
+    0%   { transform: translate(-50%,-50%) scale(0.2) rotate(0deg); opacity: 1; }
+    40%  { transform: translate(-50%,-50%) scale(1.4) rotate(var(--rot)); opacity: 1; }
+    100% { transform: translate(-50%,-60%) scale(1) rotate(var(--rot)); opacity: 0; }
+  }
+
+  /* Big center display */
+  #center-display {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  #main-letter {
+    font-family: 'Noto Sans Telugu', sans-serif;
+    font-weight: 900;
+    font-size: clamp(140px, 30vw, 320px);
+    line-height: 1;
+    color: var(--accent1);
+    text-shadow: 6px 6px 0 rgba(0,0,0,0.08);
+    animation: pop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    transition: color 0.15s;
+  }
+
+  @keyframes pop {
+    0%   { transform: scale(0.4); }
+    100% { transform: scale(1); }
+  }
+
+  #romanization {
+    font-family: 'Baloo Tamma 2', sans-serif;
+    font-size: clamp(22px, 4vw, 52px);
+    font-weight: 600;
+    color: #888;
+    margin-top: -10px;
+    letter-spacing: 2px;
+  }
+
+  /* Particle / confetti */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particle-fly 1s ease-out forwards;
+  }
+  @keyframes particle-fly {
+    0%   { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+  }
+
+  /* Touch ripple */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: ripple-expand 0.6s ease-out forwards;
+  }
+  @keyframes ripple-expand {
+    0%   { width: 0; height: 0; opacity: 0.7; transform: translate(-50%,-50%) scale(1); }
+    100% { width: 200px; height: 200px; opacity: 0; transform: translate(-50%,-50%) scale(1); }
+  }
+
+  /* UI overlay */
+  #ui-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    pointer-events: none;
+  }
+
+  #title-badge {
+    font-family: 'Baloo Tamma 2', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--accent1);
+    padding: 6px 16px;
+    border-radius: 30px;
+    box-shadow: 0 3px 12px rgba(255,107,53,0.35);
+  }
+
+  #counter-badge {
+    font-family: 'Baloo Tamma 2', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    background: #fff;
+    padding: 6px 16px;
+    border-radius: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+
+  /* Idle prompt */
+  #idle-prompt {
+    position: fixed;
+    inset: 0;
+    z-index: 8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    transition: opacity 0.5s;
+  }
+
+  #idle-prompt.hidden { opacity: 0; pointer-events: none; }
+
+  .idle-title {
+    font-family: 'Baloo Tamma 2', sans-serif;
+    font-size: clamp(28px, 6vw, 64px);
+    font-weight: 800;
+    color: var(--accent1);
+    text-align: center;
+    animation: bounce 2s ease-in-out infinite;
+  }
+  .idle-sub {
+    font-size: clamp(16px, 3vw, 28px);
+    color: #777;
+    text-align: center;
+  }
+  .idle-hands {
+    font-size: clamp(48px, 12vw, 120px);
+    animation: waggle 1.2s ease-in-out infinite alternate;
+  }
+
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-12px); }
+  }
+  @keyframes waggle {
+    0%   { transform: rotate(-15deg); }
+    100% { transform: rotate(15deg); }
+  }
+
+  /* Telugu alphabet guide strip (bottom) */
+  #alpha-strip {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 20;
+    padding: 8px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(8px);
+    border-top: 2px solid rgba(0,0,0,0.05);
+  }
+
+  .alpha-btn {
+    font-family: 'Noto Sans Telugu', sans-serif;
+    font-size: clamp(14px, 2.2vw, 22px);
+    font-weight: 700;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #fff;
+    transition: transform 0.1s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  .alpha-btn:active { transform: scale(0.88); }
+
+  /* Fullscreen btn */
+  #fs-btn {
+    position: fixed;
+    bottom: 70px;
+    right: 16px;
+    z-index: 30;
+    background: var(--accent4);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 10px 16px;
+    font-family: 'Baloo Tamma 2', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    pointer-events: all;
+    transition: background 0.2s;
+  }
+  #fs-btn:hover { background: #0a6e90; }
+
+  /* Star burst effect */
+  .star {
+    position: absolute;
+    pointer-events: none;
+    font-size: 28px;
+    animation: star-pop 0.8s ease-out forwards;
+  }
+  @keyframes star-pop {
+    0%   { transform: translate(-50%,-50%) scale(0) rotate(0deg); opacity: 1; }
+    60%  { transform: translate(-50%,-50%) scale(1.3) rotate(180deg); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(0.8) rotate(360deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs" id="bg-blobs"></div>
+
+<div id="burst-container"></div>
+
+<div id="ui-top">
+  <div id="title-badge">చిట్టి వేళ్ళు 🖐️</div>
+  <div id="counter-badge">⌨️ <span id="count">0</span> అక్షరాలు</div>
+</div>
+
+<div id="idle-prompt">
+  <div class="idle-hands">👐</div>
+  <div class="idle-title">ఇక్కడ నొక్కండి!</div>
+  <div class="idle-sub">Press any key or tap the screen</div>
+</div>
+
+<div id="center-display">
+  <div id="main-letter"></div>
+  <div id="romanization"></div>
+</div>
+
+<div id="alpha-strip" id="alpha-strip"></div>
+
+<button id="fs-btn" onclick="toggleFS()">⛶ Full Screen</button>
+
+<script>
+// ─── Telugu Vowels + Consonants with romanized hints ───
+const VOWELS = [
+  {t:'అ',r:'a'},{t:'ఆ',r:'aa'},{t:'ఇ',r:'i'},{t:'ఈ',r:'ee'},
+  {t:'ఉ',r:'u'},{t:'ఊ',r:'oo'},{t:'ఎ',r:'e'},{t:'ఏ',r:'ae'},
+  {t:'ఐ',r:'ai'},{t:'ఒ',r:'o'},{t:'ఓ',r:'oh'},{t:'ఔ',r:'au'},
+];
+const CONSONANTS = [
+  {t:'క',r:'ka'},{t:'ఖ',r:'kha'},{t:'గ',r:'ga'},{t:'ఘ',r:'gha'},
+  {t:'చ',r:'cha'},{t:'జ',r:'ja'},{t:'ట',r:'ta'},{t:'డ',r:'da'},
+  {t:'త',r:'tha'},{t:'థ',r:'Tha'},{t:'ద',r:'dha'},{t:'ధ',r:'Dha'},
+  {t:'న',r:'na'},{t:'ప',r:'pa'},{t:'ఫ',r:'pha'},{t:'బ',r:'ba'},
+  {t:'భ',r:'bha'},{t:'మ',r:'ma'},{t:'య',r:'ya'},{t:'ర',r:'ra'},
+  {t:'ల',r:'la'},{t:'వ',r:'va'},{t:'శ',r:'sha'},{t:'స',r:'sa'},
+  {t:'హ',r:'ha'},{t:'ళ',r:'La'},{t:'క్ష',r:'ksha'},{t:'ఞ',r:'nya'},
+];
+const ALL = [...VOWELS, ...CONSONANTS];
+
+const COLORS = ['#FF6B35','#FFD166','#06D6A0','#118AB2','#EF476F','#9B5DE5','#F7B731','#20BF6B','#FC5C65','#45AAF2'];
+const EMOJIS = ['⭐','🌈','🎉','🎊','✨','💫','🌟','🎈','🌸','🎀'];
+const STARS  = ['⭐','🌟','💫','✨'];
+
+let count = 0;
+let idle = true;
+let idleTimer;
+
+const burstEl = document.getElementById('burst-container');
+const mainLetter = document.getElementById('main-letter');
+const romanEl = document.getElementById('romanization');
+const countEl = document.getElementById('count');
+const idlePrompt = document.getElementById('idle-prompt');
+const strip = document.getElementById('alpha-strip');
+
+// ─── Build alphabet strip ───
+ALL.forEach((item, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'alpha-btn';
+  btn.textContent = item.t;
+  btn.style.background = COLORS[i % COLORS.length];
+  btn.addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    showLetter(item, e.clientX, e.clientY);
+  });
+  strip.appendChild(btn);
+});
+
+// ─── Build animated background blobs ───
+const blobEl = document.getElementById('bg-blobs');
+for (let i = 0; i < 6; i++) {
+  const b = document.createElement('div');
+  b.className = 'blob';
+  const size = 200 + Math.random() * 300;
+  b.style.width  = size + 'px';
+  b.style.height = size + 'px';
+  b.style.left   = Math.random() * 100 + 'vw';
+  b.style.top    = Math.random() * 100 + 'vh';
+  b.style.background = COLORS[i % COLORS.length];
+  b.style.animationDuration = (6 + Math.random() * 8) + 's';
+  b.style.animationDelay    = (-Math.random() * 8) + 's';
+  blobEl.appendChild(b);
+}
+
+// ─── Core: show a Telugu letter ───
+function showLetter(item, x, y) {
+  idle = false;
+  idlePrompt.classList.add('hidden');
+
+  count++;
+  countEl.textContent = count;
+
+  // Update center
+  mainLetter.style.animation = 'none';
+  mainLetter.offsetHeight; // reflow
+  mainLetter.style.animation = 'pop 0.3s cubic-bezier(0.34,1.56,0.64,1)';
+  const col = COLORS[Math.floor(Math.random() * COLORS.length)];
+  mainLetter.style.color = col;
+  mainLetter.textContent = item.t;
+  romanEl.textContent = item.r;
+
+  // Burst letters
+  for (let i = 0; i < 6; i++) {
+    spawnBurst(item.t, x || vw()/2, y || vh()/2, col);
+  }
+
+  // Particles
+  spawnParticles(x || vw()/2, y || vh()/2);
+
+  // Ripple on touch
+  if (x) spawnRipple(x, y, col);
+
+  // Occasional star
+  if (Math.random() < 0.3) spawnStar(x || vw()/2, y || vh()/2);
+
+  // Reset idle
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    idlePrompt.classList.remove('hidden');
+  }, 8000);
+}
+
+function spawnBurst(char, cx, cy, color) {
+  const el = document.createElement('div');
+  el.className = 'burst-letter';
+  const sz = 40 + Math.random() * 60;
+  const rot = (Math.random() - 0.5) * 60;
+  const dx = (Math.random() - 0.5) * 200;
+  const dy = (Math.random() - 0.5) * 200;
+  el.style.cssText = `
+    left:${cx + dx}px; top:${cy + dy}px;
+    font-size:${sz}px; color:${color};
+    --rot:${rot}deg;
+    text-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+  `;
+  el.textContent = char;
+  burstEl.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+function spawnParticles(cx, cy) {
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const sz = 6 + Math.random() * 14;
+    const angle = (i / 12) * Math.PI * 2;
+    const dist = 60 + Math.random() * 120;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    p.style.cssText = `
+      left:${cx}px; top:${cy}px;
+      width:${sz}px; height:${sz}px;
+      background:${COLORS[Math.floor(Math.random()*COLORS.length)]};
+      --dx:${dx}px; --dy:${dy}px;
+      animation-duration:${0.5+Math.random()*0.5}s;
+    `;
+    burstEl.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+}
+
+function spawnRipple(cx, cy, color) {
+  const r = document.createElement('div');
+  r.className = 'ripple';
+  r.style.cssText = `left:${cx}px; top:${cy}px; border:3px solid ${color};`;
+  burstEl.appendChild(r);
+  r.addEventListener('animationend', () => r.remove());
+}
+
+function spawnStar(cx, cy) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.cssText = `left:${cx}px; top:${cy}px;`;
+  s.textContent = STARS[Math.floor(Math.random()*STARS.length)];
+  burstEl.appendChild(s);
+  s.addEventListener('animationend', () => s.remove());
+}
+
+// ─── Keyboard: map any key to a random Telugu letter ───
+document.addEventListener('keydown', e => {
+  if (e.repeat) return;
+  const item = ALL[Math.floor(Math.random() * ALL.length)];
+  showLetter(item, null, null);
+});
+
+// ─── Touch / click on main area ───
+document.addEventListener('pointerdown', e => {
+  if (e.target.closest('#alpha-strip') || e.target.closest('#fs-btn')) return;
+  const item = ALL[Math.floor(Math.random() * ALL.length)];
+  showLetter(item, e.clientX, e.clientY);
+});
+
+// ─── Fullscreen ───
+function toggleFS() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(()=>{});
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+function vw() { return window.innerWidth; }
+function vh() { return window.innerHeight; }
+
+// Show idle prompt initially
+idleTimer = setTimeout(() => {}, 0); // already visible
+</script>
+</body>
+</html>
